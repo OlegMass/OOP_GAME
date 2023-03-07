@@ -1,33 +1,23 @@
 import time
 import random
+import json
+import os
 
+data_1 = {}
 
-data = {
-    "name": "hero",
-    "level": 1,
-    "experience": 0,
-    "boss_level": 1,
-    "life": 100,
-    "defense": 20,
-    "damage": 30,
-    "critical": 10,
-    "dodge": 15,
-    "ignore_defense": 15    
-        }
-data_1 = {
-    "name": "hero_1",
-    "level": 50,
-    "experience": 400,
-    "boss_level": 14,
-    "life": 300,
-    "defense": 50,
-    "damage": 70,
-    "critical": 50,
-    "dodge": 50,
-    "ignore_defense": 50    
-        }
+def save_data():
+    with open("game_data.json", 'w') as f:
+        json.dump(data_1, f)
+
+def read_data():
+    global data_1
+    with open("game_data.json", 'r') as f:
+        data_1 = json.load(f)
+
 alive=True
 creature_num=1
+
+read_data()
 
 
 class Creator:
@@ -52,16 +42,13 @@ class Creator:
             if random.randint(1, 100) <= self.critical:
                 print(f"{self.name} made a critical attack!!!")
                 if random.randint(1,100) <= self.ignore_defense:
-                    print(f"{self.name} ignore defence during attack!")
+                    print(f"{self.name} ignore defense during attack!")
                     user.life -= self.damage*2 
                 user.life -= (self.damage - user.defense)*2
             if random.randint(1,100) <= self.ignore_defense:
-                print(f"{self.name} ignore defence during attack!")
+                print(f"{self.name} ignore defense during attack!")
                 user.life -= self.damage
             user.life -= self.damage - user.defense
-
-    def experiance(self):
-        pass
 
 
 hero = Creator(data_1["name"], data_1["life"], data_1["defense"], data_1["damage"])
@@ -84,58 +71,64 @@ def show(model):
     print(f"""
 {model.name}
 1 Life: {model.life}
-2 Defence: {model.defense}
+2 Defense: {model.defense}
 3 Damage: {model.damage}
 4 Critical hit chance: {model.critical}
-5 Defence ignoring chance : {model.ignore_defense}  
+5 Defense ignoring chance : {model.ignore_defense}  
 6 Dodge: {model.dodge}
 {f'7 Boss level: {hero.boss_level}' if model.name == 'Ktulkhu' else ''}
 """)
 
-
 def increase_level():
     hero.level+=1
-    data["level"] += 1
+    data_1["level"] += 1
+    save_data()
     print("""
 1 Life
-2 Defence
+2 Defense
 3 Damage
 4 Critical hit chance
-5 Defence ignoring chance   
+5 Defense ignoring chance   
 6 Dodge 
     """)
     option = int(input('What do you want to improve? '))
     if option == 1:
         hero.life+=10
-        data["life"] +=10
+        data_1["life"] +=10
+        save_data()
         print(f"Now you have {hero.life} life")
     elif option == 2:
         hero.defense += 2
-        data["defense"] += 2
+        data_1["defense"] += 2
+        save_data()
         print(f"Now you have {hero.defense} defense.")
     elif option == 3:
         hero.damage += 2
-        hero["damage"] += 2
-        print(f"Now you have {hero.damage} defense.")
+        data_1["damage"] += 2
+        save_data()
+        print(f"Now you have {hero.damage} damage.")
     elif option == 4:
         hero.critical += 1
-        hero["critical"] += 1
-        print(f"Now you have {hero.critical} defense.")
+        data_1["critical"] += 1
+        save_data()
+        print(f"Now you have {hero.critical} % critical chanse.")
     elif option == 5:
         hero.ignore_defense += 1
-        hero["ignore_defense"] += 1
-        print(f"Now you have {hero.ignore_defense} defense.")
+        data_1["ignore_defense"] += 1
+        save_data()
+        print(f"Now you have {hero.ignore_defense} % chance to ignore the damage.")
     elif option == 6:
         hero.dodge += 1
-        hero["dodge"] += 1
+        data_1["dodge"] += 1
+        save_data()
         print(f"Now you have {hero.dodge} defense.")
 
     print(f"""
 1 Life: {hero.life}
-2 Defence: {hero.defense}
+2 Defense: {hero.defense}
 3 Damage: {hero.damage}
 4 Critical hit chance: {hero.critical}
-5 Defence ignoring chance : {hero.ignore_defense}  
+5 Defense ignoring chance : {hero.ignore_defense}  
 6 Dodge: {hero.dodge}
           """)
 
@@ -165,7 +158,8 @@ def attack_boss():
                 print('You win the boss!')
                 boss.life = boss_life  
                 hero.boss_level += 1  
-                data["boss_level"] += 1
+                data_1["boss_level"] += 1
+                save_data()
                 increse_boos() 
                 hero.life = hero_life 
                 break
@@ -185,7 +179,8 @@ def attack_boss():
                 print('You win the boss!')
                 boss.life = boss_life   
                 hero.boss_level += 1  
-                data["boss_level"] += 1
+                data_1["boss_level"] += 1
+                save_data()
                 increse_boos()  
                 hero.life = hero_life 
                 break
@@ -232,10 +227,14 @@ def attack_creature():
             if creature.life <= 0 and creature_num == 1:
                 print('You win!')
                 hero.experience += no_exp * 50
+                data_1["experience"] += no_exp*50
+                save_data()
                 if hero.experience>=hero.level*100:
                     hero.life = hero_life
                     increase_level()
                     hero.experience = 0
+                    data_1["experience"] = 0
+                    save_data()
                 break
             elif creature.life <= 0 and creature_num > 1:
                 creature_num -= 1
@@ -262,11 +261,14 @@ def attack_creature():
             if creature.life <= 0 and creature_num == 1:
                 print('You win!')
                 hero.experience += no_exp * 50
+                data_1["experience"] += no_exp*50
+                save_data()
                 if hero.experience >= hero.level*100:
                     hero.life = hero_life
                     increase_level()
                     hero.experience = 0
-                    
+                    data_1["experience"] = 0
+                    save_data()
                 break
             elif creature.life <= 0 and creature_num > 1:
                 creature_num -= 1
@@ -287,7 +289,9 @@ def stop_game():
     return alive
 
 def main():
+    read_data()
     while alive == True:
+
         print(""" 
 1 Attack creatures
 2 Attack Boss
@@ -296,6 +300,7 @@ def main():
 """)
 
         choice = int(input("What do you want to do? "))
+        os.system('cls' if os.name == 'nt' else 'clear')
         if choice == 1:
             attack_creature()
         elif choice == 2:
@@ -308,6 +313,8 @@ def main():
             break
 
 main()
+
+
 
 
 
